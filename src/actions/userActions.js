@@ -8,6 +8,12 @@ import {
     USER_LOGIN_REQUEST,
     USER_LOGIN_SUCCESS,
     USER_LOGIN_FAIL,
+
+    USER_REFRESH_REQUEST,
+    USER_REFRESH_SUCCESS,
+    USER_REFRESH_FAIL,
+
+
     USER_LOGOUT,
 
     USER_REGISTER_REQUEST,
@@ -34,8 +40,8 @@ import {
 
 } from '../constants/userConstants'
 
-const userInfo = localStorage.getItem("userInfo") ? JSON.parse(localStorage.getItem("userInfo")) : null;
-const token = userInfo ? userInfo.access_token : null;
+
+
 
 const config = {
     headers: {
@@ -43,12 +49,7 @@ const config = {
     }
 };
 
-const authConfig = {
-    headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-    },
-};
+
 
 
 export const login = (email, password) => async (dispatch) => {
@@ -84,6 +85,51 @@ export const login = (email, password) => async (dispatch) => {
         })
     }
 }
+
+export const refresh = () => async (dispatch, getState) => {
+    const {
+        userLogin: { userInfo },
+    } = getState()
+
+    const refresh_token = userInfo ? userInfo.refresh_token : null;
+    if(!refresh_token) {
+
+        dispatch(logout())
+    }
+    try {
+        dispatch({
+            type: USER_LOGIN_REQUEST
+        })
+        const { data } = await api().post(
+            '/api/users/login/',
+            {
+                'grant_type': 'refresh_token',
+                'client_id': REACT_APP_AUTH_CLIENT_ID,
+                'client_secret': REACT_APP_AUTH_CLIENT_SECRET,
+                'refresh_token': refresh_token
+            },
+            config
+        )
+        dispatch({
+            type: USER_LOGIN_SUCCESS,
+            payload: data
+        })
+        console.log("data", data)
+        localStorage.setItem('userInfo', JSON.stringify(data))
+
+    } catch (error) {
+        console.log("ERROR HERE")
+        dispatch({
+            type: USER_LOGIN_FAIL,
+            payload: error.response && error.response.data.detail
+                ? error.response.data.detail
+                : error.message,
+        })
+        dispatch(logout())
+    }
+}
+
+
 
 export const logout = () => (dispatch) => {
     localStorage.removeItem('userInfo')
@@ -132,6 +178,9 @@ export const register = (name, email, password) => async (dispatch) => {
     }
 }
 
+
+
+
 export const getUserDetails = (id) => async (dispatch, getState) => {
     try {
         dispatch({
@@ -142,6 +191,16 @@ export const getUserDetails = (id) => async (dispatch, getState) => {
             userLogin: { userInfo },
         } = getState()
 
+        const token = userInfo ? userInfo.access_token : null;
+
+        const authConfig = {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        };
+
+        
 
         const { data } = await api().get(
             `/api/users/${id}/`,
@@ -155,10 +214,22 @@ export const getUserDetails = (id) => async (dispatch, getState) => {
 
 
     } catch (error) {
+        // if (error.response.status === 403) {
+        //     try {
+        //     dispatch(refresh())
+        //     console.log("Should try to refresh")
+
+        //     }
+        //     catch (error) {
+        //         console.log(error)
+        //     }
+        // }
+
+
         dispatch({
             type: USER_DETAILS_FAIL,
             payload: error.response && error.response.data.detail
-                ? error.response.data.detail
+                ? error.response.data.detail 
                 : error.message,
         })
     }
@@ -175,6 +246,14 @@ export const updateUserProfile = (user) => async (dispatch, getState) => {
             userLogin: { userInfo },
         } = getState()
 
+        const token = userInfo ? userInfo.access_token : null;
+
+        const authConfig = {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        };
 
         const { data } = await api().put(
             `/api/users/profile/update/`,
@@ -215,6 +294,16 @@ export const verifyUserPhone = (authy_phone) => async (dispatch, getState) => {
             userLogin: { userInfo },
         } = getState()
 
+        const token = userInfo ? userInfo.access_token : null;
+
+        const authConfig = {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        };
+
+        
 
         const { data } = await api().post(
             `/api/users/authy/verify-phone/`,
@@ -248,6 +337,15 @@ export const registerUserPhone = (authy_phone, token) => async (dispatch, getSta
         const {
             userLogin: { userInfo },
         } = getState()
+
+        const access_token = userInfo ? userInfo.access_token : null;
+
+        const authConfig = {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${access_token}`,
+            },
+        };
 
 
         const { data } = await api().post(

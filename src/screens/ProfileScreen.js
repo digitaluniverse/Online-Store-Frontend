@@ -6,6 +6,8 @@ import { Loader, Message } from '../components'
 import { getUserDetails, updateUserProfile } from '../actions/userActions'
 import { VerifyPhoneForm } from 'screens'
 import { USER_UPDATE_PROFILE_RESET } from '../constants/userConstants'
+import { logout } from '../actions/userActions'
+
 
 function ProfileScreen({ history }) {
     const [name, setName] = useState('')
@@ -32,14 +34,20 @@ function ProfileScreen({ history }) {
 
     const [showPhoneVerify, setShowPhoneVerify] = useState(false);
 
-    const handleShow = () => setShowPhoneVerify(true);
+    const handleShow = () => {
+        setShowPhoneVerify(true)
+    }
 
 
     useEffect(() => {
+
         if (!userInfo) {
             history.push('/login')
         }
         else {
+            if(error){
+                // dispatch(logout())
+            }
             if (!user || !user.name || success || userInfo._id !== user._id) {
                 dispatch({ type: USER_UPDATE_PROFILE_RESET })
                 dispatch(getUserDetails('profile'))
@@ -71,7 +79,10 @@ function ProfileScreen({ history }) {
         }
     }
 
-
+    const handlePhoneFormClose = () => {
+        setShowPhoneVerify(false)
+        history.push('/profile')
+    }
 
     return (
         <Row>
@@ -79,9 +90,7 @@ function ProfileScreen({ history }) {
             <VerifyPhoneForm
                 number={authy_phone}
                 show={showPhoneVerify}
-                handleClose={() => {
-                    setShowPhoneVerify(false);
-                }}
+                handleClose={() => {handlePhoneFormClose()}}
             />
             <Col md={3}>
                 <h2>User Profile</h2>

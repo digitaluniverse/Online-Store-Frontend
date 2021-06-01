@@ -1,44 +1,53 @@
 import React, { useState, useEffect } from 'react'
 import { Loader, Message, FormContainer } from 'components'
-import { Form, Button, Row, Col, Modal } from 'react-bootstrap'
+import { Form, Button, Row, Col, Modal, Container } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import { verifyUserPhone, registerUserPhone } from '../actions/userActions'
 
 function VerifyPhoneForm({ number, show, handleClose }) {
-    const [authy_phone, setAuthyPhone] = useState(number)
     const [message, setMessage] = useState('')
     const [token, setToken] = useState('')
-
-
+    const [codeSent, setCodeSent] = useState(false)
 
 
     const dispatch = useDispatch()
-
     const userVerifyPhone = useSelector(state => state.userVerifyPhone)
     const { verifcationSuccess, loadingPhoneVerification } = userVerifyPhone
 
     const userRegisterPhone = useSelector(state => state.userRegisterPhone)
-    const { registrationSuccess, loadingPhoneRegistration } = userRegisterPhone
+    const { registrationSuccess, loadingPhoneRegistration, error } = userRegisterPhone
 
 
     useEffect(() => {
+        if (show && !codeSent) {
+            sendCode()
+        }
+        if (registrationSuccess) {
+            setCodeSent(false)
+            handleClose()
+        }
 
-        // if (verifcationSuccess && ((!registrationSuccess && !loadingPhoneRegistration)|| loadingPhoneVerification) ) {
-        //     dispatch(verifyUserPhone(authy_phone))
-        // } else {
-        //     console.log()
-        // }
-
-    }, [dispatch, verifcationSuccess])
+    }, [dispatch, verifcationSuccess, codeSent, show,registrationSuccess])
 
 
-
-    const submitHandler = (e) => {
-        e.preventDefault()
-        dispatch(verifyUserPhone(authy_phone))
-        setMessage('')
+    const closeDialog = () => {
+        setCodeSent(false)
+        handleClose()
     }
 
+    const sendCode = () => {
+        console.log("Sending code")
+        dispatch(verifyUserPhone(number))
+        setMessage('')
+        setCodeSent(true)
+    }
+
+    const submitRegisterHandler = (e) => {
+        e.preventDefault()
+        dispatch(registerUserPhone(number, token))
+        setMessage('')
+
+    }
 
     return (
 
@@ -53,37 +62,49 @@ function VerifyPhoneForm({ number, show, handleClose }) {
             </Modal.Header>
             <Modal.Body>
                 <FormContainer>
-                    <Form onSubmit={submitHandler}>
+                    <Form onSubmit={submitRegisterHandler}>
 
-                        <Form.Group controlId='number'>
-                            <Form.Label className="mr-3" >Phone Number
-                        </Form.Label>
+
+
+
+                        <Form.Group controlId='code'>
+                            <Form.Label className="mr-3" >Enter SMS Code
+                    </Form.Label>
 
                             <Form.Control
                                 required
                                 type='text'
-                                placeholder='Enter Phone Number'
-                                value={authy_phone}
-                                onChange={(e) => setAuthyPhone(e.target.value)}
+                                placeholder='Enter Code sent to your Phone'
+                                value={token}
+                                onChange={(e) => setToken(e.target.value)}
                             >
                             </Form.Control>
 
                         </Form.Group>
-
-
-
-                        <Button size='sm' type='submit' variant='primary'>
-                            Send Verification Code
-                        </Button>
+                        <Container>
+                            <Row>
+                                <Col>
+                                    <Button size='md' variant='primary' onClick={sendCode}>
+                                        Re-Send Code
+                                    </Button>
+                                </Col>
+                                <Col>
+                                    <Button size='md' type='submit' variant='primary'>
+                                        Submit
+                                    </Button>
+                                </Col>
+                            </Row>
+                        </Container>
 
                     </Form>
+
 
 
                 </FormContainer>
 
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="primary" onClick={handleClose}>
+                <Button variant="primary" onClick={closeDialog}>
                     Close
           </Button>
 
