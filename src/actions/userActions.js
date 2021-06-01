@@ -86,6 +86,40 @@ export const login = (email, password) => async (dispatch) => {
     }
 }
 
+export const authyLogin = (authyEmail, token) => async (dispatch) => {
+    try {
+        dispatch({
+            type: USER_LOGIN_REQUEST
+        })
+        const { data } = await api().post(
+            '/api/users/authy/verify/',
+            {
+                'username': authyEmail,
+                'token': token,
+            },
+            config
+        )
+        dispatch({
+            type: USER_LOGIN_SUCCESS,
+            payload: data
+        })
+        console.log("data", data)
+
+        localStorage.setItem('userInfo', JSON.stringify(data))
+
+    } catch (error) {
+        dispatch({
+            type: USER_LOGIN_FAIL,
+            payload: error.response && error.response.data.detail
+                ? error.response.data.detail
+                : error.message,
+        })
+    }
+}
+
+
+
+
 export const refresh = () => async (dispatch, getState) => {
     const {
         userLogin: { userInfo },
