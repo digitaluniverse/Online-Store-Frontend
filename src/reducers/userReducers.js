@@ -1,7 +1,10 @@
 import {
+    REACT_APP_AUTH_CLIENT_ID,
+    REACT_APP_AUTH_CLIENT_SECRET,
+
     USER_LOGIN_REQUEST,
-    USER_LOGIN_SUCCESS, 
-    USER_LOGIN_FAIL, 
+    USER_LOGIN_SUCCESS,
+    USER_LOGIN_FAIL,
 
     USER_REFRESH_REQUEST,
     USER_REFRESH_SUCCESS,
@@ -27,12 +30,28 @@ import {
     USER_VERIFY_PHONE_SUCCESS,
     USER_VERIFY_PHONE_FAIL,
 
+    USER_VERIFY_EMAIL_REQUEST,
+    USER_VERIFY_EMAIL_SUCCESS,
+    USER_VERIFY_EMAIL_FAIL,
+
+    USER_CONFIRM_EMAIL_REQUEST,
+    USER_CONFIRM_EMAIL_SUCCESS,
+    USER_CONFIRM_EMAIL_FAIL,
+
+    USER_PASSWORD_RESET_REQUEST,
+    USER_PASSWORD_RESET_SUCCESS,
+    USER_PASSWORD_RESET_FAIL,
+
+    USER_PASSWORD_RESET_EMAIL_REQUEST,
+    USER_PASSWORD_RESET_EMAIL_SUCCESS,
+    USER_PASSWORD_RESET_EMAIL_FAIL,
+
     USER_REGISTER_PHONE_REQUEST,
     USER_REGISTER_PHONE_SUCCESS,
     USER_REGISTER_PHONE_FAIL,
 
-
 } from '../constants/userConstants'
+
 
 export const userLoginReducer = (state = {}, action) => {
     switch(action.type){
@@ -118,7 +137,7 @@ export const userUpdateProfileReducer = (state = {}, action) => {
             return { loading: false, success: true, userInfo: action.payload }
 
         case USER_UPDATE_PROFILE_FAIL:
-            return { loading: false, error: action.payload }
+            return { loading: false, updateError: action.payload }
 
         case USER_UPDATE_PROFILE_RESET:
             return {}
@@ -143,6 +162,75 @@ export const userVerifyPhoneReducer = (state = {}, action) => {
             return state
     }
 }
+
+
+
+export const userVerifyEmailReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_VERIFY_EMAIL_REQUEST:
+            return { loadingEmailVerification: true }
+
+        case USER_VERIFY_EMAIL_SUCCESS:
+            return { loadingEmailVerification: false, verifcationSuccess: true, userInfo: action.payload }
+
+        case USER_VERIFY_EMAIL_FAIL:
+            return { loadingEmailVerification: false, error: action.payload }
+
+        default:
+            return state
+    }
+}
+
+export const userPasswordResetEmailReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_PASSWORD_RESET_EMAIL_REQUEST:
+            return { loadingSendPassResetEmail: true }
+
+        case USER_PASSWORD_RESET_EMAIL_SUCCESS:
+            return { loadingSendPassResetEmail: false, resetEmailSentSuccess: true, userInfo: action.payload }
+
+        case USER_PASSWORD_RESET_EMAIL_FAIL:
+            return { loadingSendPassResetEmail: false, error: action.payload }
+
+        default:
+            return state
+    }
+}
+
+export const userPasswordResetConfirmReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_PASSWORD_RESET_REQUEST:
+            return { loadingConfirmPassResetEmail: true }
+
+        case USER_PASSWORD_RESET_SUCCESS:
+            return { loadingConfirmPassResetEmail: false, resetEmailConfirmSuccess: true, userInfo: action.payload }
+
+        case USER_PASSWORD_RESET_FAIL:
+            return { loadingConfirmPassResetEmail: false, error: action.payload }
+
+        default:
+            return state
+    }
+}
+
+
+
+export const userEmailConfirmReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_CONFIRM_EMAIL_REQUEST:
+            return { loadingConfirmEmail: true }
+
+        case USER_CONFIRM_EMAIL_SUCCESS:
+            return { loadingConfirmEmail: false, EmailConfirmSuccess: true, userInfo: action.payload }
+
+        case USER_CONFIRM_EMAIL_FAIL:
+            return { loadingConfirmEmail: false, error: action.payload }
+
+        default:
+            return state
+    }
+}
+
 
 export const userRegisterPhoneReducer = (state = {}, action) => {
     switch (action.type) {

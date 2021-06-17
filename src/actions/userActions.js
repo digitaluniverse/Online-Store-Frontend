@@ -13,7 +13,6 @@ import {
     USER_REFRESH_SUCCESS,
     USER_REFRESH_FAIL,
 
-
     USER_LOGOUT,
 
     USER_REGISTER_REQUEST,
@@ -33,6 +32,22 @@ import {
     USER_VERIFY_PHONE_REQUEST,
     USER_VERIFY_PHONE_SUCCESS,
     USER_VERIFY_PHONE_FAIL,
+
+    USER_VERIFY_EMAIL_REQUEST,
+    USER_VERIFY_EMAIL_SUCCESS,
+    USER_VERIFY_EMAIL_FAIL,
+
+    USER_CONFIRM_EMAIL_REQUEST,
+    USER_CONFIRM_EMAIL_SUCCESS,
+    USER_CONFIRM_EMAIL_FAIL,
+
+    USER_PASSWORD_RESET_REQUEST,
+    USER_PASSWORD_RESET_SUCCESS,
+    USER_PASSWORD_RESET_FAIL,
+
+    USER_PASSWORD_RESET_EMAIL_REQUEST,
+    USER_PASSWORD_RESET_EMAIL_SUCCESS,
+    USER_PASSWORD_RESET_EMAIL_FAIL,
 
     USER_REGISTER_PHONE_REQUEST,
     USER_REGISTER_PHONE_SUCCESS,
@@ -86,15 +101,15 @@ export const login = (email, password) => async (dispatch) => {
     }
 }
 
-export const authyLogin = (authyEmail, token) => async (dispatch) => {
+export const authyLogin = (authy_phone, token) => async (dispatch) => {
     try {
         dispatch({
             type: USER_LOGIN_REQUEST
         })
         const { data } = await api().post(
-            '/api/users/authy/verify/',
+            '/api/users/authy/login/',
             {
-                'username': authyEmail,
+                'authy_phone': `+${authy_phone}`,
                 'token': token,
             },
             config
@@ -117,6 +132,143 @@ export const authyLogin = (authyEmail, token) => async (dispatch) => {
     }
 }
 
+
+export const confirmEmail = (id, code) => async (dispatch) => {
+    try {
+        dispatch({
+            type: USER_CONFIRM_EMAIL_REQUEST
+        })
+        const { data } = await api().post(
+            '/api/users/email/confirm/',
+            {
+                'id': id,
+                'code': code,
+            },
+            config
+        )
+        dispatch({
+            type: USER_CONFIRM_EMAIL_SUCCESS,
+            payload: data
+        })
+        console.log("data", data)
+
+
+    } catch (error) {
+        dispatch({
+            type: USER_CONFIRM_EMAIL_FAIL,
+            payload: error.response && error.response.data.detail
+                ? error.response.data.detail
+                : error.message,
+        })
+    }
+}
+
+
+export const verifyUserEmail = (email) => async (dispatch,getState) => {
+    try {
+        
+        dispatch({
+            type: USER_VERIFY_EMAIL_REQUEST
+        })
+
+        const {
+            userLogin: { userInfo },
+        } = getState()
+
+        const token = userInfo ? userInfo.access_token : null;
+
+        const authConfig = {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        };
+
+        const { data } = await api().put(
+            '/api/users/email/verify/',
+            {
+                'email': email
+            },
+            authConfig
+        )
+        dispatch({
+            type: USER_VERIFY_EMAIL_SUCCESS,
+            payload: data
+        })
+        console.log("data", data)
+
+
+    } catch (error) {
+        dispatch({
+            type: USER_VERIFY_EMAIL_FAIL,
+            payload: error.response && error.response.data.detail
+                ? error.response.data.detail
+                : error.message,
+        })
+    }
+}
+
+
+export const passwordResetEmail = (email) => async (dispatch,getState) => {
+    try {
+        
+        dispatch({
+            type: USER_PASSWORD_RESET_EMAIL_REQUEST
+        })
+
+
+        const { data } = await api().put(
+            '/api/users/password-reset/send-email/',
+            {
+                'email': email
+            },
+            config
+        )
+        dispatch({
+            type: USER_PASSWORD_RESET_EMAIL_SUCCESS,
+            payload: data
+        })
+        console.log("data", data)
+
+    } catch (error) {
+        dispatch({
+            type: USER_PASSWORD_RESET_EMAIL_FAIL,
+            payload: error.response && error.response.data.detail
+                ? error.response.data.detail
+                : error.message,
+        })
+    }
+}
+
+export const passwordReset = (id, code) => async (dispatch) => {
+    try {
+        dispatch({
+            type: USER_PASSWORD_RESET_REQUEST
+        })
+        const { data } = await api().post(
+            '/api/users/password-reset/confirm/',
+            {
+                'id': id,
+                'code': code,
+            },
+            config
+        )
+        dispatch({
+            type: USER_PASSWORD_RESET_SUCCESS,
+            payload: data
+        })
+        console.log("data", data)
+
+
+    } catch (error) {
+        dispatch({
+            type: USER_PASSWORD_RESET_FAIL,
+            payload: error.response && error.response.data.detail
+                ? error.response.data.detail
+                : error.message,
+        })
+    }
+}
 
 
 
