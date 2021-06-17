@@ -1,7 +1,7 @@
+#PROJECT LINKS
+Link to Backend Repo [Online Store Backend](https://github.com/digitaluniverse/Online-Store-Backend)
+
 # Getting Started with Create React App
-
- [Online Store Backend](https://github.com/digitaluniverse/Online-Store-Backend)
-
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
