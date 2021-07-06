@@ -96,7 +96,7 @@ export const login = (email, password) => async (dispatch) => {
             type: USER_LOGIN_FAIL,
             payload: error.response && error.response.data.detail
                 ? error.response.data.detail
-                : error.message,
+                : error.response.data.error_description,
         })
     }
 }
@@ -177,19 +177,19 @@ export const verifyUserEmail = (email) => async (dispatch,getState) => {
 
         const token = userInfo ? userInfo.access_token : null;
 
-        const authConfig = {
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-        };
+        // const authConfig = {
+        //     headers: {
+        //         "Content-Type": "application/json",
+        //         Authorization: `Bearer ${token}`,
+        //     },
+        // };
 
         const { data } = await api().put(
             '/api/users/email/verify/',
             {
                 'email': email
             },
-            authConfig
+            config
         )
         dispatch({
             type: USER_VERIFY_EMAIL_SUCCESS,
@@ -320,6 +320,7 @@ export const refresh = () => async (dispatch, getState) => {
 export const logout = () => (dispatch) => {
     localStorage.removeItem('userInfo')
     dispatch({ type: USER_LOGOUT })
+    dispatch({ type: USER_DETAILS_RESET })
 
 }
 

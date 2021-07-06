@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { Form, Button, Row, Col, Container } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import { Loader, Message, FormContainer } from '../components'
-import { login, authyLogin } from '../actions/userActions'
+import { login, authyLogin, verifyUserEmail } from '../actions/userActions'
 import { PasswordResetForm } from 'screens'
 
 import PhoneInput from 'react-phone-input-2'
@@ -15,6 +15,13 @@ function LoginScreen({ location, history }) {
     const [password, setPassword] = useState('')
     const [authy_phone, setAuthyPhone] = useState('')
     const [code, setCode] = useState('')
+    const [message, setMessage] = useState('')
+    const [alert, setAlert] = useState('false')
+    const [showVerify, setShowVerify] = useState('false')
+    const [showPasswordReset, setShowPasswordReset] = useState(false);
+    const [showVerifyEmail, setShowVerifyEmail] = useState(false);
+    const [messageVariant, setMessageVariant] = useState('')
+
 
     const dispatch = useDispatch()
 
@@ -22,17 +29,52 @@ function LoginScreen({ location, history }) {
 
     const userLogin = useSelector(state => state.userLogin)
     const { error, loading, userInfo } = userLogin
+    
+    const userVerifyEmail = useSelector(state => state.userVerifyEmail)
+    const { verifcationSuccess, loadingEmailVerification } = userVerifyEmail
 
-    const [showPasswordReset, setShowPasswordReset] = useState(false);
 
     const handlePasswordResetModal = () => {
         setShowPasswordReset(true)
     }
+
+
+    const handleEmailVerify = () => {
+        console.log("Sending Email")
+        dispatch(verifyUserEmail(email))
+        setAlert(true);
+        setMessageVariant('info')
+        setMessage('Sending Email Verification')
+    }
+    
+
+    
     useEffect(() => {
+        const timer = setTimeout(() => {
+            setAlert(false);
+        }, 5500);
+        if (loading) {
+            clearTimeout(timer)
+        }
+
         if (userInfo) {
             history.push(redirect)
         }
-    }, [history, userInfo, redirect, showPasswordReset])
+        if (!error || !loading){
+            setShowVerify(false)
+            setAlert(false)
+        }
+        if (error) {
+            setAlert(true);
+        }
+        if (error == "verification") {
+            setShowVerify(true);
+            setMessage("Email must be verified before login");
+        }
+        else {
+            setMessage(error);
+        }
+    }, [history, userInfo, error, redirect, showPasswordReset, message, alert])
 
     const submitHandler = (e) => {
         e.preventDefault()
@@ -49,21 +91,40 @@ function LoginScreen({ location, history }) {
         history.push('/login')
     }
 
+    const handleVerifyEmailFormClose = () => {
+        console.log("Verify Email Form Close")
+        setShowPasswordReset(false)
+        // history.push('/login')
+    }
+
+
     return (
         <Container>
-            {error && <Message variant='danger'>{error}</Message>}
+                {alert && message && <Message variant={messageVariant}>{message}</Message>}
+
+
             {loading && <Loader />}
 
             <PasswordResetForm
                 show={showPasswordReset}
                 handleClose={() => { handlePasswordResetFormClose() }}
             />
+            
+
+            
+
             <Row>
 
                 <Col>
 
                     <FormContainer>
+                        <Row>
                         <h1>Sign In</h1>
+                        {showVerify && <Button type='submit' variant='danger' onClick={handleEmailVerify}>
+                            Verify Email
+                        </Button>}
+
+                        </Row>
 
                         <Form onSubmit={submitHandler}>
 
@@ -73,7 +134,7 @@ function LoginScreen({ location, history }) {
                                     type='email'
                                     placeholder='Enter Email'
                                     value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    onChange={(e) => {setEmail(e.target.value); setShowVerify(false)}}
                                 >
                                 </Form.Control>
                             </Form.Group>
@@ -89,6 +150,7 @@ function LoginScreen({ location, history }) {
                                 >
                                 </Form.Control>
                             </Form.Group>
+
                             <Button type='submit' variant='primary'>
                                 Sign In
                             </Button>
@@ -111,6 +173,7 @@ function LoginScreen({ location, history }) {
                                 </Button>
                             </Col>
                         </Row>
+
 
 
 
@@ -157,11 +220,13 @@ function LoginScreen({ location, history }) {
 
 
                     </FormContainer>
+                    
                 </Col>
 
 
 
             </Row>
+            
         </Container>
     )
 }

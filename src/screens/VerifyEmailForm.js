@@ -115,4 +115,4 @@ function VerifyEmailForm({ number, show, handleClose }) {
     )
 }
 
-export default VerifyPhoneForm
+export default VerifyEmailForm

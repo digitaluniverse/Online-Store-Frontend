@@ -13,13 +13,23 @@ function PasswordResetScreen({ match, location, history }) {
     const [message, setMessage] = useState('')
     const [messageVariant, setMessageVariant] = useState('')
     const [alert, setAlert] = useState('false')
+    const [ip, setIp] = useState('')
 
     const dispatch = useDispatch()
     const [resetConfirmation, setResetConfirmation] = useState(false)
 
     const userPasswordReset = useSelector(state => state.userPasswordReset)
     const { resetEmailConfirmSuccess, loadingConfirmPassResetEmail } = userPasswordReset
-
+    fetch("https://api.ipify.org?format=json")
+    .then(response => {
+      return response.json();
+     }, "jsonp")
+    .then(res => {
+      console.log(res)
+      setIp(res.ip)
+    })
+    .catch(err => console.log(err))
+    
     useEffect(() => {
 
         const timer = setTimeout(() => {
@@ -41,7 +51,6 @@ function PasswordResetScreen({ match, location, history }) {
             // history.push('/profile')
             setMessage('go back to profile')
             setMessageVariant('danger')
-
         }
 
     }, [dispatch, history, id, code, resetEmailConfirmSuccess])
@@ -64,17 +73,21 @@ function PasswordResetScreen({ match, location, history }) {
 
     return (
         <div>
-            <h1>Reset Password</h1>
             {!resetConfirmation &&
             <div>
-            <p>Temp ID: {id}</p>
-            <p>Code: {code}</p>
+            <h1>YOU REALLY SHOULDN'T BE HERE</h1>
+            <h1>THIS IS YOU –––> {ip}</h1>
+            { message && <Message variant={'danger'}>{"YOU ARE NOT AUTHORIZED TO BE HERE!!!! We are Tracking Your IP:  "+ip+" WE ILL FIND YOU AND WE WILL KILL YOU, BEST SECURE SHOP TEAM" }</Message>}
+
             </div>
             }
-            { message && <Message variant={messageVariant}>{message}</Message>}
 
             {resetConfirmation &&
                 <div>
+                { message && <Message variant={messageVariant}>{message}</Message>}
+
+                <h1>Reset Password</h1>
+
                  <p>Temp ID: {id}</p>
 
                     <FormContainer>
