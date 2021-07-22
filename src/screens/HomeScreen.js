@@ -2,7 +2,7 @@ import { React, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Row, Col } from 'react-bootstrap'
 import { Product, Loader, Message } from '../components'
-import { listProducts } from '../actions/productActions'
+import { productActions } from '../actions'
 
 function HomeScreen() {
     const dispatch = useDispatch()
@@ -10,7 +10,7 @@ function HomeScreen() {
     const { error, loading, products } = productList
 
     useEffect(() => {
-        dispatch(listProducts())
+        dispatch(productActions.listProducts())
     }, [dispatch])
 
     return (

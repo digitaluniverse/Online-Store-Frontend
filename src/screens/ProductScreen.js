@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { Row, Col, Image, ListGroup, Button, Card, Form } from 'react-bootstrap'
 import { Rating, Loader, Message } from '../components'
-import { listProductDetails } from '../actions/productActions'
+import { productActions } from '../actions'
 
 function ProductScreen({ match, history }) {
     const [qty, setQty] = useState(1)
@@ -15,7 +15,7 @@ function ProductScreen({ match, history }) {
     }
     
     useEffect(() => {
-        dispatch(listProductDetails(match.params.id))
+        dispatch(productActions.listProductDetails(match.params.id))
 
     }, [dispatch, match])
 
@@ -97,7 +97,7 @@ function ProductScreen({ match, history }) {
                                                 <Button
                                                     onClick={addToCartHandler}
                                                     className="btn-block"
-                                                    disabled={product.countInStock === 0}
+                                                    disabled={product.countInStock <= 0}
                                                     type='button'
                                                 >
                                                     Add to Cart

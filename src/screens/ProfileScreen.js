@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom'
 import { Form, Button, Row, Col } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import { Loader, Message } from '../components'
-import { getUserDetails, updateUserProfile, verifyUserEmail, passwordResetEmail } from '../actions/userActions'
+import { userActions } from '../actions'
 import { VerifyPhoneForm } from 'screens'
 import { USER_UPDATE_PROFILE_RESET } from '../constants/userConstants'
-import { logout } from '../actions/userActions'
-
+import PhoneInput from 'react-phone-input-2'
+import 'react-phone-input-2/lib/style.css'
 
 function ProfileScreen({ history }) {
     const [name, setName] = useState('')
@@ -16,6 +16,10 @@ function ProfileScreen({ history }) {
 
     const [verifyEmail, setVerifyEmail] = useState(false)
     const [verifyPhone, setVerifyPhone] = useState(false)
+
+    const [newsletterAlerts, setNewsletterAlerts] = useState(false)
+    const [textAlerts, setTextAlerts] = useState(false)
+
 
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
@@ -56,12 +60,6 @@ function ProfileScreen({ history }) {
             setAlert(false);
         }, 3500);
 
-
-
-        // To clear or cancel a timer, you call the clearTimeout(); method, 
-        // passing in the timer object that you created into clearTimeout().
-
-
         if (!userInfo) {
             history.push('/login')
         }
@@ -71,7 +69,7 @@ function ProfileScreen({ history }) {
                 setAlert(true);
                 clearTimeout(timer)
                 dispatch({ type: USER_UPDATE_PROFILE_RESET })
-                dispatch(getUserDetails('profile'))
+                dispatch(userActions.getUserDetails('profile'))
                 setMessageVariant('success')
                 setMessage('Get Updated Profile Success')
 
@@ -90,9 +88,11 @@ function ProfileScreen({ history }) {
                 setAuthyPhone(user.authy_phone)
                 setVerifyEmail(user.email_verified)
                 setVerifyPhone(user.phone_verified)
+                setTextAlerts(user.text_alerts)
+                setNewsletterAlerts(user.newsletter)
             }
             if (error) {
-                dispatch(logout())
+                dispatch(userActions.logout())
 
             }
             else {
@@ -101,6 +101,8 @@ function ProfileScreen({ history }) {
                 setAuthyPhone(user.authy_phone)
                 setVerifyEmail(user.email_verified)
                 setVerifyPhone(user.phone_verified)
+                setTextAlerts(user.text_alerts)
+                setNewsletterAlerts(user.newsletter)
             }
             // clearTimeout(timer)
 
@@ -120,11 +122,13 @@ function ProfileScreen({ history }) {
 
             setMessage('Passwords do not match')
         } else {
-            dispatch(updateUserProfile({
+            dispatch(userActions.updateUserProfile({
                 'id': user._id,
                 'name': name,
                 'email': email,
                 'authy_phone': authy_phone,
+                'newsletter': newsletterAlerts,
+                'text_alerts': textAlerts,
             }))
             setAlert(true);
             setMessageVariant('info')
@@ -140,7 +144,7 @@ function ProfileScreen({ history }) {
 
     const handlePasswordReset = () => {
         console.log("Sending code")
-        dispatch(passwordResetEmail(user.email))
+        dispatch(userActions.passwordResetEmail(user.email))
         setAlert(true);
         setMessageVariant('info')
         setMessage('Sending Password Reset')
@@ -148,13 +152,13 @@ function ProfileScreen({ history }) {
 
     const handleEmailVerify = () => {
         console.log("Sending Email")
-        dispatch(verifyUserEmail(user.email))
+        dispatch(userActions.verifyUserEmail(user.email))
         setAlert(true);
         setMessageVariant('info')
         setMessage('Sending Email Verification')
     }
-    
-    
+
+
 
 
     return (
@@ -206,6 +210,7 @@ function ProfileScreen({ history }) {
 
                         </Form.Control>
 
+
                     </Form.Group>
                     <Form.Group controlId='authy_phone'>
                         <Form.Label className="mr-3" >Phone Number
@@ -216,6 +221,13 @@ function ProfileScreen({ history }) {
                             <Button className="" style={{ padding: '.005em 2em .001em 2em', fontSize: '.9em' }} variant="outline-danger" onClick={handleShow}>Verify</Button>
 
                         }
+
+                        <PhoneInput
+                            country={'us'}
+                            value={authy_phone}
+                            onChange={(authy_phone) => setAuthyPhone(authy_phone)}
+                        />
+                        {/* 
                         <Form.Control
                             required
                             type='text'
@@ -223,9 +235,35 @@ function ProfileScreen({ history }) {
                             value={authy_phone}
                             onChange={(e) => setAuthyPhone(e.target.value)}
                         >
-                        </Form.Control>
+                        </Form.Control> */}
 
                     </Form.Group>
+                    {user &&
+                        <Form.Group controlId='text_alerts'>
+                            <Form.Label className="mr-3" >Alerts
+
+                            </Form.Label>
+                            <Form.Check
+                                disabled={!user.email_verified}
+                                type='checkbox'
+                                checked={newsletterAlerts}
+                                id='newsletter'
+                                label='Recieve Email Newsletter'
+                                onChange={(e) => setNewsletterAlerts(e.currentTarget.checked)}
+
+                            />
+                            <Form.Check
+                                disabled={!user.phone_verified}
+                                type='checkbox'
+                                checked={textAlerts}
+                                id='text_alerts'
+                                label='Order Update Texts'
+                                onChange={(e) => setTextAlerts(e.currentTarget.checked)}
+
+                            />
+
+                        </Form.Group>
+                    }
 
                     <Row>
                         <Col>
@@ -234,11 +272,11 @@ function ProfileScreen({ history }) {
                             </Button>
                         </Col>
 
-                        {user.email_verified &&
-                        <Col>
-                        <Button className="" style={{ padding: '.001em .2em .001em .5em', fontSize: '.9em' }} variant="outline-danger" onClick={handlePasswordReset} >Reset Password</Button>
+                        {(user && user.email_verified) &&
+                            <Col>
+                                <Button className="" style={{ padding: '.001em .2em .001em .5em', fontSize: '.9em' }} variant="outline-danger" onClick={handlePasswordReset} >Reset Password</Button>
 
-                        </Col>
+                            </Col>
                         }
                     </Row>
 

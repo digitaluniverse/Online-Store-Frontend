@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Loader, Message, FormContainer } from 'components'
 import { Form, Button, Row, Col, Modal, Container } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
-import { verifyUserPhone, registerUserPhone } from '../actions/userActions'
+import { userActions } from '../actions'
 
 function VerifyPhoneForm({ number, show, handleClose }) {
     const [message, setMessage] = useState('')
@@ -24,6 +24,7 @@ function VerifyPhoneForm({ number, show, handleClose }) {
         }
         if (registrationSuccess) {
             setCodeSent(false)
+            window.location.reload();
             handleClose()
         }
 
@@ -37,14 +38,14 @@ function VerifyPhoneForm({ number, show, handleClose }) {
 
     const sendCode = () => {
         console.log("Sending code")
-        dispatch(verifyUserPhone(number))
+        dispatch(userActions.verifyUserPhone(number))
         setMessage('')
         setCodeSent(true)
     }
 
     const submitRegisterHandler = (e) => {
         e.preventDefault()
-        dispatch(registerUserPhone(number, token))
+        dispatch(userActions.registerUserPhone(number, token))
         setMessage('')
 
     }

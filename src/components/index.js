@@ -5,6 +5,7 @@ import Message from './Message'
 import Product from './Product'
 import Rating from './Rating'
 import FormContainer from './FormContainer'
+import CheckoutSteps from './CheckoutSteps'
 
 //Export all components for easier loading in Screens
-export {Header, Footer, Loader, Message, Product, Rating, FormContainer}
+export {Header, Footer, Loader, Message, Product, Rating, FormContainer, CheckoutSteps}

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { Form, Button, Row, Col } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import { Loader, Message, FormContainer } from '../components'
-import { register } from '../actions/userActions'
+import { userActions } from '../actions'
 
 function RegisterScreen({ location, history }) {
 
@@ -12,37 +12,84 @@ function RegisterScreen({ location, history }) {
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
     const [message, setMessage] = useState('')
+    const [messageVariant, setMessageVariant] = useState('')
+    const [showLoginButton, setShowLoginButton] = useState(false)
+    const [showConfirmButton, setShowConfirmButton] = useState(false)
 
     const dispatch = useDispatch()
 
     const redirect = location.search ? location.search.split('=')[1] : '/'
 
     const userRegister = useSelector(state => state.userRegister)
-    const { error, loading, userInfo } = userRegister
+    const { error, error_type, loading, registrationSuccess } = userRegister
 
     useEffect(() => {
-        if (userInfo) {
-            history.push(redirect)
+        if (registrationSuccess) {
+            setShowLoginButton('true')
+            setMessageVariant('success')
+            setMessage('Check your inbox for a verification email')
         }
-    }, [history, userInfo, redirect])
+        if (error) {
+            setMessageVariant('danger')
+            setMessage(error)
+            if (error_type) {
+                switch (error_type) {
+
+                    case 'exists':
+                        setShowLoginButton(true)
+                        setMessage(error, error_type)
+                        console.log('exists')
+                    case 'verify':
+                        setShowConfirmButton(true)
+                        setMessage(error, error_type)
+                        console.log('verify')
+
+                    default:
+                        setShowConfirmButton(false)
+                        setMessage(error, error_type)
+                        console.log(error_type)                }
+
+            }
+        }
+    }, [history, registrationSuccess, redirect, error, error_type])
 
     const submitHandler = (e) => {
         e.preventDefault()
 
         if (password != confirmPassword) {
+            setMessageVariant('danger')
             setMessage('Passwords do not match')
         } else {
-            dispatch(register(name, email, password))
+            dispatch(userActions.register(name, email, password))
         }
 
     }
 
+
     return (
         <FormContainer>
             <h1>Sign Up</h1>
-            {message && <Message variant='danger'>{message}</Message>}
-            {error && <Message variant='danger'>{error}</Message>}
+
+            {message && <Message variant={messageVariant}>{message}</Message>}
+            {/* {error && <Message variant='danger'>{error}</Message>} */}
             {loading && <Loader />}
+            {showLoginButton &&
+                <Link
+                    to={redirect ? `/login?redirect=${redirect}` : '/login'}>
+                    <Button variant='primary'>
+                     Click here to login
+                    </Button >
+                </Link>
+            }
+            {showConfirmButton &&
+                <Link
+                    to={redirect ? `/confirm-email/?email=${email}&send=true` : '/login'}>
+                    <Button variant='primary'>
+                     Click here to Resend Verification
+                    </Button >                
+                    </Link>
+            }
+{ !registrationSuccess && 
             <Form onSubmit={submitHandler}>
 
                 <Form.Group controlId='name'>
@@ -98,13 +145,13 @@ function RegisterScreen({ location, history }) {
                 </Button>
 
             </Form>
-
+}
             <Row className='py-3'>
                 <Col>
                     Have an Account? <Link
                         to={redirect ? `/login?redirect=${redirect}` : '/login'}>
                         Sign In
-                        </Link>
+                    </Link>
                 </Col>
             </Row>
         </FormContainer >

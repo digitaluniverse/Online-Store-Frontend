@@ -42,6 +42,10 @@ import {
     USER_PASSWORD_RESET_SUCCESS,
     USER_PASSWORD_RESET_FAIL,
 
+    USER_PASSWORD_RESET_AUTH_REQUEST,
+    USER_PASSWORD_RESET_AUTH_SUCCESS,
+    USER_PASSWORD_RESET_AUTH_FAIL,
+
     USER_PASSWORD_RESET_EMAIL_REQUEST,
     USER_PASSWORD_RESET_EMAIL_SUCCESS,
     USER_PASSWORD_RESET_EMAIL_FAIL,
@@ -54,14 +58,14 @@ import {
 
 
 export const userLoginReducer = (state = {}, action) => {
-    switch(action.type){
+    switch (action.type) {
         case USER_LOGIN_REQUEST:
-            return {loading:true}
+            return { loading: true }
 
         case USER_LOGIN_SUCCESS:
-            return {loading: false, userInfo: action.payload}
+            return { loading: false, userInfo: action.payload }
         case USER_LOGIN_FAIL:
-            return {loading: false, error: action.payload}
+            return { loading: false, error: action.payload }
         case USER_LOGOUT:
             return {}
         default:
@@ -93,10 +97,10 @@ export const userRegisterReducer = (state = {}, action) => {
             return { loading: true }
 
         case USER_REGISTER_SUCCESS:
-            return { loading: false, userInfo: action.payload }
+            return { loading: false, registrationSuccess: action.payload }
 
         case USER_REGISTER_FAIL:
-            return { loading: false, error: action.payload }
+            return { loading: false, error: action.payload ,error_type: action.error_type}
 
         case USER_LOGOUT:
             return {}
@@ -163,8 +167,6 @@ export const userVerifyPhoneReducer = (state = {}, action) => {
     }
 }
 
-
-
 export const userVerifyEmailReducer = (state = {}, action) => {
     switch (action.type) {
         case USER_VERIFY_EMAIL_REQUEST:
@@ -174,7 +176,7 @@ export const userVerifyEmailReducer = (state = {}, action) => {
             return { loadingEmailVerification: false, verifcationSuccess: true, userInfo: action.payload }
 
         case USER_VERIFY_EMAIL_FAIL:
-            return { loadingEmailVerification: false, error: action.payload }
+            return { loadingEmailVerification: false, error: action.payload, error_type: action.error_type }
 
         default:
             return state
@@ -197,22 +199,36 @@ export const userPasswordResetEmailReducer = (state = {}, action) => {
     }
 }
 
-export const userPasswordResetConfirmReducer = (state = {}, action) => {
+export const userPasswordResetAuthReducer = (state = {}, action) => {
     switch (action.type) {
-        case USER_PASSWORD_RESET_REQUEST:
+        case USER_PASSWORD_RESET_AUTH_REQUEST:
             return { loadingConfirmPassResetEmail: true }
 
-        case USER_PASSWORD_RESET_SUCCESS:
-            return { loadingConfirmPassResetEmail: false, resetEmailConfirmSuccess: true, userInfo: action.payload }
+        case USER_PASSWORD_RESET_AUTH_SUCCESS:
+            return { loadingConfirmPassResetEmail: false, resetEmailConfirmSuccess: true, token: action.payload }
 
-        case USER_PASSWORD_RESET_FAIL:
+        case USER_PASSWORD_RESET_AUTH_FAIL:
             return { loadingConfirmPassResetEmail: false, error: action.payload }
 
         default:
             return state
     }
 }
+export const userPasswordResetReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_PASSWORD_RESET_REQUEST:
+            return { loadingPasswordReset: true }
 
+        case USER_PASSWORD_RESET_SUCCESS:
+            return { loadingPasswordReset: false, resetPasswordSuccess: true, userInfo: action.payload }
+
+        case USER_PASSWORD_RESET_FAIL:
+            return { loadingPasswordReset: false, error: action.payload }
+
+        default:
+            return state
+    }
+}
 
 
 export const userEmailConfirmReducer = (state = {}, action) => {
@@ -247,3 +263,4 @@ export const userRegisterPhoneReducer = (state = {}, action) => {
             return state
     }
 }
+

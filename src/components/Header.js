@@ -4,7 +4,7 @@ import { LinkContainer } from 'react-router-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import { userLoginReducer } from '../reducers/userReducers';
 import { Link } from 'react-router-dom';
-import { logout } from '../actions/userActions'
+import { userActions } from '../actions'
 
 
 function Header() {
@@ -14,7 +14,7 @@ function Header() {
     const dispatch = useDispatch()
 
     const logoutHandler = (e) => {
-        dispatch(logout())
+        dispatch(userActions.logout())
     }
     return (
         <header>

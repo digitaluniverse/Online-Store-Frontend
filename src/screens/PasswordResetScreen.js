@@ -1,25 +1,30 @@
 import { React, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { passwordReset } from '../actions/userActions'
+import { userActions } from 'actions'
 import { Form, Button, Row, Col } from 'react-bootstrap'
 import { Loader, Message, FormContainer } from '../components'
 
 function PasswordResetScreen({ match, location, history }) {
 
-    const id = match.params.email
-    const code = location.search ? String(location.search.split('=')[1]) : null
+    let search = new URLSearchParams(location.search);
+    const id = location.search ? String(search.get('token')) : null
+    const code = location.search ? String(search.get('code')) : null
+    // const [email, setEmail] = useState(location.search ? String(search.get('email')) : null)
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
     const [message, setMessage] = useState('')
     const [messageVariant, setMessageVariant] = useState('')
-    const [alert, setAlert] = useState('false')
     const [ip, setIp] = useState('')
 
     const dispatch = useDispatch()
     const [resetConfirmation, setResetConfirmation] = useState(false)
 
+    const userPasswordResetAuth = useSelector(state => state.userPasswordResetAuth)
+    const { resetEmailConfirmSuccess, loadingConfirmPassResetEmail , token} = userPasswordResetAuth
+
     const userPasswordReset = useSelector(state => state.userPasswordReset)
-    const { resetEmailConfirmSuccess, loadingConfirmPassResetEmail } = userPasswordReset
+    const { loadingPasswordReset, resetPasswordSuccess , userInfo} = userPasswordReset
+
     fetch("https://api.ipify.org?format=json")
     .then(response => {
       return response.json();
@@ -32,16 +37,16 @@ function PasswordResetScreen({ match, location, history }) {
     
     useEffect(() => {
 
-        const timer = setTimeout(() => {
-            setAlert(false);
-        }, 3500);
 
+        if (resetPasswordSuccess){
+            history.push('/profile')
+
+        }
         if (id && code && !loadingConfirmPassResetEmail && !resetEmailConfirmSuccess) {
-            dispatch(passwordReset(id, code))
+            dispatch(userActions.passwordResetAuth(id, code))
         }
         if (resetEmailConfirmSuccess) {
             setResetConfirmation(true)
-            clearTimeout(timer)
             setMessage('password reset email confirmed... Enter a new Password')
             setMessageVariant('success')
 
@@ -53,7 +58,7 @@ function PasswordResetScreen({ match, location, history }) {
             setMessageVariant('danger')
         }
 
-    }, [dispatch, history, id, code, resetEmailConfirmSuccess])
+    }, [dispatch, history, id, code, resetEmailConfirmSuccess, token, resetPasswordSuccess])
 
 
 
@@ -63,7 +68,7 @@ function PasswordResetScreen({ match, location, history }) {
         if (password != confirmPassword) {
             setMessage('Passwords do not match')
         } else {
-            // dispatch(updatePassword())
+            dispatch(userActions.passwordReset(password,token))
             console.log("Updating Password Password")
 
             setMessage('')
@@ -76,7 +81,7 @@ function PasswordResetScreen({ match, location, history }) {
             {!resetConfirmation &&
             <div>
             <h1>YOU REALLY SHOULDN'T BE HERE</h1>
-            <h1>THIS IS YOU –––> {ip}</h1>
+            {/* <h1>THIS IS YOU –––> {ip}</h1> */}
             { message && <Message variant={'danger'}>{"YOU ARE NOT AUTHORIZED TO BE HERE!!!! We are Tracking Your IP:  "+ip+" WE ILL FIND YOU AND WE WILL KILL YOU, BEST SECURE SHOP TEAM" }</Message>}
 
             </div>

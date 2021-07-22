@@ -1,50 +1,61 @@
 import { React, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { confirmEmail, verifyUserEmail } from '../actions/userActions'
+import { userActions} from '../actions'
 import { Loader, Message, FormContainer } from 'components'
 import { Form, Button, Row, Col, Modal, Container } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 
 function ConfirmEmailScreen({ match, location, history }) {
 
-    const id = match.params.email
-    const code = location.search ? String(location.search.split('=')[1]) : null
-    const [email, setEmail] = useState('')
+    let search = new URLSearchParams(location.search);
+    const id = location.search ? String(search.get('token')) : null
+    const code = location.search ? String(search.get('code')) : null
+    const [email, setEmail] = useState(location.search ? String(search.get('email')) : null)
     const [message, setMessage] = useState('')
     const [messageVariant, setMessageVariant] = useState('')
     const [showVerifyForm, setShowVerifyForm] = useState(false)
     const [showError, setShowError] = useState(false)
-    const [Confirmed, setConfirmed] = useState(false)
+    const [confirmed, setConfirmed] = useState(false)
+    const [send, setSend] = useState(search.has('send') ? true : false)
+
 
 
     const dispatch = useDispatch()
 
     const userVerifyEmail = useSelector(state => state.userVerifyEmail)
-    const { verifcationSuccess, loadingEmailVerification, error } = userVerifyEmail
+    const { verifcationSuccess, loadingEmailVerification, error, error_type } = userVerifyEmail
 
     const userEmailConfirm = useSelector(state => state.userEmailConfirm)
     const { EmailConfirmSuccess, loadingConfirmEmail, userInfo } = userEmailConfirm
 
 
-
+    
 
     useEffect(() => {
+        if(send){
+            dispatch(userActions.verifyUserEmail(email))
+            setMessageVariant('success')
+            setMessage('Confirmation email sent check your junk folder if you can not find it')
+            setSend(false)
+        }
         if (!id && !code) {
             setShowVerifyForm(true)
         }
-        if (id && code && !loadingConfirmEmail && !EmailConfirmSuccess) {
-            dispatch(confirmEmail(id, code))
+        if (id && code && !loadingConfirmEmail && !EmailConfirmSuccess && !confirmed) {
+            dispatch(userActions.confirmEmail(id, code))
             console.log("dispatching")
         }
         if (EmailConfirmSuccess) {
-            setMessage(userInfo)
+            setMessage("verified "+ userInfo.verified)
             setMessageVariant('success')
             setConfirmed(true)
         }
-        if (!EmailConfirmSuccess) {
+        if (!EmailConfirmSuccess & id & code & !email) {
             setMessage("Email Confirmation Invalid")
             setMessageVariant('danger')
+
         }
+
         if(error && !loadingEmailVerification){
             if (error == 'Email already verified'){
                 setConfirmed(true)
@@ -60,7 +71,7 @@ function ConfirmEmailScreen({ match, location, history }) {
         // }
 
 
-    }, [dispatch, history, id, code, EmailConfirmSuccess, error, loadingEmailVerification, message])
+    }, [dispatch, history, id, code, EmailConfirmSuccess, error, loadingEmailVerification, message, confirmed, send ])
 
 
     const closeVerifyModal = () => {
@@ -70,15 +81,20 @@ function ConfirmEmailScreen({ match, location, history }) {
 
     const submitVerifyHandler = (e) => {
         e.preventDefault()
-        dispatch(verifyUserEmail(email))
+        dispatch(userActions.verifyUserEmail(email))
         setMessage('')
     }
 
     return (
         <div>
+            {id ? <div>token: {id}</div>: ''}
+            {code ? <div>code: {code}</div>: ''}
+            {email != '' ? <div>email: {email}</div>: ''}
+            {send ? <div>send: {String(send)}</div>: ''}
+
             {message && <Message variant={messageVariant}>{message}</Message>}
             {
-                Confirmed ?
+                (confirmed || error_type == 'email_exists') ?
                 <Link to="/login">
                 <Button>
                      Click here to login
@@ -125,7 +141,7 @@ function ConfirmEmailScreen({ match, location, history }) {
                                 <Row>
                                     <Col>
                                         <Button size='md' type='submit' variant='primary'>
-                                            Submit
+                                            Send Confirmation
                                         </Button>
                                     </Col>
                                 </Row>

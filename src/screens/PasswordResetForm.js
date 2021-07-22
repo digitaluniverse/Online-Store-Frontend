@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Loader, Message, FormContainer } from 'components'
 import { Form, Button, Row, Col, Modal, Container } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
-import { passwordResetEmail } from '../actions/userActions'
+import { userActions } from '../actions'
 
 function PasswordResetForm({ show, handleClose }) {
     const [message, setMessage] = useState('')
@@ -29,7 +29,7 @@ function PasswordResetForm({ show, handleClose }) {
 
     const submitRegisterHandler = (e) => {
         e.preventDefault()
-        dispatch(passwordResetEmail(email))
+        dispatch(userActions.passwordResetEmail(email))
         setMessage('')
     }
 

@@ -1,6 +1,21 @@
 import { Container } from 'react-bootstrap'
 import { BrowserRouter as Router, Route } from 'react-router-dom'
-import { HomeScreen, ProductScreen, CartScreen, LoginScreen, RegisterScreen, ProfileScreen, ConfirmEmailScreen, PasswordResetScreen } from './screens'
+
+import {
+  HomeScreen,
+  ProductScreen,
+  CartScreen, 
+  LoginScreen, 
+  RegisterScreen, 
+  ProfileScreen, 
+  ConfirmEmailScreen, 
+  PasswordResetScreen, 
+  ShippingScreen,
+  PaymentScreen,
+  PlaceOrderScreen,
+  OrderScreen,
+} from 'screens'
+
 import { Header, Footer } from './components'
 
 function App() {
@@ -15,8 +30,12 @@ function App() {
           <Route path='/login' component={LoginScreen} />
           <Route path='/register' component={RegisterScreen} />
           <Route path='/profile' component={ProfileScreen} />
-          <Route path='/confirm-email/:email?' component={ConfirmEmailScreen} />
+          <Route path='/confirm-email/' component={ConfirmEmailScreen} />
           <Route path='/password-reset-email/:email?' component={PasswordResetScreen} />
+          <Route path='/shipping' component={ShippingScreen} />
+          <Route path='/payment' component={PaymentScreen} />
+          <Route path='/placeorder' component={PlaceOrderScreen} />
+          <Route path='/order/:id' component={OrderScreen} />
 
 
 

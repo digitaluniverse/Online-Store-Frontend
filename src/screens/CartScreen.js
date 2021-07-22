@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 // eslint-disable-next-line
 import { Row, Col, ListGroup, Image, Form, Button, Card } from 'react-bootstrap'
 import { Message } from '../components'
-import { addToCart,removeFromCart } from '../actions/cartActions'
+import { cartActions } from '../actions'
 
 function CartScreen({ match, location, history }) {
     const productId = match.params.id
@@ -17,16 +17,16 @@ function CartScreen({ match, location, history }) {
 
     useEffect(() => {
         if (productId) {
-            dispatch(addToCart(productId, qty))
+            dispatch(cartActions.addToCart(productId, qty))
         }
     }, [dispatch, productId, qty])
 
     const removeFromCartHandler = (id)=> {
-        dispatch(removeFromCart(id))
+        dispatch(cartActions.removeFromCart(id))
     }
 
     const checkoutHandler = ()=> {
-        history.push(`/login?redirect=shopping`)
+        history.push(`/login?redirect=shipping`)
     }
 
     return (
@@ -55,7 +55,7 @@ function CartScreen({ match, location, history }) {
                                         <Form.Control
                                             as="select"
                                             value={item.qty}
-                                            onChange={(e) => dispatch(addToCart(item.product, Number(e.target.value)))}
+                                            onChange={(e) => dispatch(cartActions.addToCart(item.product, Number(e.target.value)))}
                                         >
                                             {
                                                 [...Array(item.countInStock).keys()].map((x) => (

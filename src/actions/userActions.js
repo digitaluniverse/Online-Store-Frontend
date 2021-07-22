@@ -45,6 +45,10 @@ import {
     USER_PASSWORD_RESET_SUCCESS,
     USER_PASSWORD_RESET_FAIL,
 
+    USER_PASSWORD_RESET_AUTH_REQUEST,
+    USER_PASSWORD_RESET_AUTH_SUCCESS,
+    USER_PASSWORD_RESET_AUTH_FAIL,
+
     USER_PASSWORD_RESET_EMAIL_REQUEST,
     USER_PASSWORD_RESET_EMAIL_SUCCESS,
     USER_PASSWORD_RESET_EMAIL_FAIL,
@@ -164,9 +168,9 @@ export const confirmEmail = (id, code) => async (dispatch) => {
 }
 
 
-export const verifyUserEmail = (email) => async (dispatch,getState) => {
+export const verifyUserEmail = (email) => async (dispatch, getState) => {
     try {
-        
+
         dispatch({
             type: USER_VERIFY_EMAIL_REQUEST
         })
@@ -204,14 +208,17 @@ export const verifyUserEmail = (email) => async (dispatch,getState) => {
             payload: error.response && error.response.data.detail
                 ? error.response.data.detail
                 : error.message,
+            error_type: error.response && error.response.data.type
+                ? error.response.data.type
+                : error.message,
         })
     }
 }
 
 
-export const passwordResetEmail = (email) => async (dispatch,getState) => {
+export const passwordResetEmail = (email) => async (dispatch, getState) => {
     try {
-        
+
         dispatch({
             type: USER_PASSWORD_RESET_EMAIL_REQUEST
         })
@@ -240,10 +247,10 @@ export const passwordResetEmail = (email) => async (dispatch,getState) => {
     }
 }
 
-export const passwordReset = (id, code) => async (dispatch) => {
+export const passwordResetAuth = (id, code) => async (dispatch) => {
     try {
         dispatch({
-            type: USER_PASSWORD_RESET_REQUEST
+            type: USER_PASSWORD_RESET_AUTH_REQUEST
         })
         const { data } = await api().post(
             '/api/users/password-reset/confirm/',
@@ -254,10 +261,51 @@ export const passwordReset = (id, code) => async (dispatch) => {
             config
         )
         dispatch({
+            type: USER_PASSWORD_RESET_AUTH_SUCCESS,
+            payload: data
+        })
+        localStorage.setItem('userinfo', JSON.stringify(data))
+        console.log("data", data)
+
+
+    } catch (error) {
+        dispatch({
+            type: USER_PASSWORD_RESET_AUTH_FAIL,
+            payload: error.response && error.response.data.detail
+                ? error.response.data.detail
+                : error.message,
+        })
+    }
+}
+
+export const passwordReset = (password, token) => async (dispatch) => {
+
+    try {
+        dispatch({
+            type: USER_PASSWORD_RESET_REQUEST
+        })
+        const authConfig = {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        };
+        const { data } = await api().put(
+            'api/users/profile/reset-password/',
+            {
+                'password': password,
+            },
+            authConfig
+        )
+        dispatch({
             type: USER_PASSWORD_RESET_SUCCESS,
             payload: data
         })
-        console.log("data", data)
+        dispatch({
+            type: USER_LOGIN_SUCCESS,
+            payload: data
+        })
+        localStorage.setItem('userInfo', JSON.stringify(data))
 
 
     } catch (error) {
@@ -278,7 +326,7 @@ export const refresh = () => async (dispatch, getState) => {
     } = getState()
 
     const refresh_token = userInfo ? userInfo.refresh_token : null;
-    if(!refresh_token) {
+    if (!refresh_token) {
 
         dispatch(logout())
     }
@@ -348,18 +396,21 @@ export const register = (name, email, password) => async (dispatch) => {
             payload: data
         })
 
-        dispatch({
-            type: USER_LOGIN_SUCCESS,
-            payload: data
-        })
+        // dispatch({
+        //     type: USER_LOGIN_SUCCESS,
+        //     payload: data
+        // })
 
-        localStorage.setItem('userInfo', JSON.stringify(data))
+        // localStorage.setItem('userInfo', JSON.stringify(data))
 
     } catch (error) {
         dispatch({
             type: USER_REGISTER_FAIL,
             payload: error.response && error.response.data.detail
                 ? error.response.data.detail
+                : error.message,
+            error_type: error.response && error.response.data.type
+                ? error.response.data.type
                 : error.message,
         })
     }
@@ -387,7 +438,7 @@ export const getUserDetails = (id) => async (dispatch, getState) => {
             },
         };
 
-        
+
 
         const { data } = await api().get(
             `/api/users/${id}/`,
@@ -416,7 +467,7 @@ export const getUserDetails = (id) => async (dispatch, getState) => {
         dispatch({
             type: USER_DETAILS_FAIL,
             payload: error.response && error.response.data.detail
-                ? error.response.data.detail 
+                ? error.response.data.detail
                 : error.message,
         })
     }
@@ -471,6 +522,9 @@ export const updateUserProfile = (user) => async (dispatch, getState) => {
 }
 
 
+
+
+
 export const verifyUserPhone = (authy_phone) => async (dispatch, getState) => {
     try {
         dispatch({
@@ -490,12 +544,12 @@ export const verifyUserPhone = (authy_phone) => async (dispatch, getState) => {
             },
         };
 
-        
+
 
         const { data } = await api().post(
             `/api/users/authy/verify-phone/`,
             {
-                'authy_phone': authy_phone
+                'authy_phone': `+${authy_phone}`
             },
             authConfig
         )
@@ -538,7 +592,7 @@ export const registerUserPhone = (authy_phone, token) => async (dispatch, getSta
         const { data } = await api().post(
             `/api/users/authy/register-phone/`,
             {
-                'authy_phone': authy_phone,
+                'authy_phone': `+${authy_phone}`,
                 'token': token
             },
             authConfig
